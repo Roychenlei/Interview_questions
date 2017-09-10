@@ -24,8 +24,10 @@ Tips:
 
 """
 import hashlib
+from functools import wraps
 
 _cache_db = dict()
+
 
 
 def md5(s):
@@ -35,7 +37,15 @@ def md5(s):
 
 
 def cache(f):
-    pass
+    @wraps(f)
+    def wrapper(*args,**kwargs):
+        result = _cache_db.get(args, None)
+        if result is None:
+            result = f(*args,**kwargs)
+            print 'running'
+            _cache_db[args] = result
+        return result
+    return wrapper
 
 
 @cache
@@ -45,7 +55,7 @@ def add(a, b):
 
 if __name__ == '__main__':
     assert add(3, 4) == 7
-    assert add(3, 4) == 7
+    assert add(3, b=4) == 7
     assert add(8, 4) == 12
     assert add(4, 8) == 12
     assert add(8, 4) == 12
